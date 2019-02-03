@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="container">
+      <div class="starter-template">
+      <h4>Top regex matches from:</h4>
+      <p>{% print('"' + uncleaned_sentence + '"') %}</p>
+      <h4>To:</h4>
+      <p>{% print('"' + cleaned_sentence + '"') %}</p>
+      <!--<p class="lead">Below is the result of your query.<br> You just took user input and looked up the information.  Now we need to expand the functionality!</p> -->
+      </div>
+      
+      {% print(y_class) %}
+
+
+      </div><!--/.container-->
+    </section>         
+      
+      
+      <script scr="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+      <script scr="static/js/bootstrap.min.js"></script>
+      <script> 
+      window.onload = function (event) {
+        window.location.hash = "#results";
+      };
+      </script>
+    </div><!-- /.container -->
+ {% endblock %}
+ 
