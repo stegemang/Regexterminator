@@ -5,7 +5,8 @@ from app import app
 import re
 import pandas as pd
 import numpy as np
-import pickle 
+import pickle
+import string 
 
 import difflib
 from sklearn.tree import DecisionTreeClassifier
@@ -17,9 +18,6 @@ Load pickled items
 filename = './app/finalized_model.sav'
 clf = pickle.load(open(filename, 'rb'))
 
-#Load pickled column names for transforming input data into dummy format
-dummies_cols = pickle.load(open('./app/dummies_cols.pickle', 'rb'))
-
 #Load pickled dictionary of regex values to associate classification output with actual regex pattern
 regex_dict = pickle.load(open('./app/regex_dict.pickle', 'rb'))
 
@@ -27,49 +25,90 @@ regex_dict = pickle.load(open('./app/regex_dict.pickle', 'rb'))
 #Load dictionary for class
 
 '''
+functiontion to do character counts for cleanup function below
+'''
+def charCounts(column, colname):
+    """
+    Counts the different type of characters in a string
+    
+    @param column: to apply lambda function to
+    @param colname: what the unique columns should be named
+    
+    """
+    # This is really ugly, something I could do in R very easily:
+    count = lambda l1, l2: len(list(filter(lambda c: c in l2, l1)))
+
+    out = column.apply(
+    lambda s: pd.Series(
+        {colname+'punct': count(s,set(string.punctuation)),
+         colname+'letters': count(s,set(string.ascii_letters)),
+         colname+'digits': count(s,set(string.digits)),
+         colname+'lower': count(s,set(string.ascii_lowercase)),
+         colname+'upper': count(s,set(string.ascii_uppercase)),
+         colname+'whitespace': count(s,set(string.whitespace)),
+         colname+'words': len(s.split()),
+        }))
+    return out
+
+'''
+funciton to evaluate ends of inputs, used by cleanup below
+'''
+
+def endChecks(dataf, start_col, end_col, regex = False):
+    """
+    Checks if end words and characters are the same between two strings (from columns)
+    
+    @param dataf: pandas dataframe.
+    @param start_col: initial string
+    @param end_col: modified string to compare to
+    @param regex: include regex in new table for indexing.
+    
+    @return: returns dataframe with start column and regex for indexing, and four new columns of features
+    """
+    out = pd.DataFrame()
+    for index, row in dataf.iterrows():
+        tmp = {
+            start_col: row[start_col],
+            'regex': row['regex'] if regex else '',
+            'first_word_same': row[start_col].split()[0] == row[end_col].split()[0] if len(row[end_col].split())>0 else False,
+            'first_char_same': row[start_col][0] == row[end_col][0] if len(row[end_col].split())>0 else False,
+            'last_word_same': row[start_col].split()[-1] == row[end_col].split()[-1] if len(row[end_col].split())>0 else False,
+            'last_char_same': row[start_col][-1] == row[end_col][-1] if len(row[end_col].split())>0 else False,
+        }
+        out = out.append(tmp, ignore_index=True)
+        
+    return out
+
+'''
 Function to clean-up the input sentences
 '''
 def cleanInput(a, b):
-	"""
-	Function to perform feature transformation & engineering 
+    """
+    Function to perform feature transformation & engineering 
 
-	@param a: uncleaned sentence
-	@param b: desired output sentence 
+    @param a: uncleaned sentence
+    @param b: desired output sentence 
 
-	@return: feature transformed data
-	"""
+    @return: feature transformed data
+    """
+    user_inputs = {'sentence': [a], 'end': [b]}
+    user_inputs = pd.DataFrame(user_inputs)
 
-	d = difflib.Differ()
-	diff = d.compare(a,b)
-	tmp = list(diff)
-	out = pd.DataFrame(data={
-	    'sentence': a,
-	    'diffs': [i[0] for i in tmp],
-	    'char': [i[2] for i in tmp]
-	})
-	    
+    #add in character type counts features
 
-	'''
-	Using the dummies table from the trained data set, reindex the new dummies to fit the same standard
-	https://stackoverflow.com/questions/28465633/easy-way-to-apply-transformation-from-pandas-get-dummies-to-new-data
-	'''
-	dummies_to_fit = pd.get_dummies(out, columns=['char'])
+    a_counts = charCounts(user_inputs['sentence'], 'start_n_')
+    b_counts = charCounts(user_inputs['end'], 'end_n_')
 
-	dummies_to_fit = dummies_to_fit.reindex(columns = dummies_cols, fill_value=0)
+    input_type_counts = pd.concat([user_inputs, a_counts, b_counts], axis= 1)
 
-	#Rename the columns
-	dummies_to_fit = dummies_to_fit.rename(columns={'char_[': 'char_left_square_bracket', 'char_]': 'char_right_square_bracket',
-	                       'char_<': 'char_left_carrot'})
+    #string ends feature:
+    string_ends = endChecks(user_inputs, 'sentence','end', regex = False)
 
-	X_new = dummies_to_fit.drop(['sentence', 'regex','diffs'], axis=1) #Remove everything but the dummy variables
+    input_features_combo = pd.merge(input_type_counts, string_ends, on="sentence")
 
-	#For whatever reason it's creating a separate matrix for each one. Add them all together instead
-	X_new = X_new.sum().values
+    X_new = input_features_combo.drop(['sentence','regex','end'], axis=1)
 
-	#Reshape data for single sample
-	X_new = X_new.reshape(1, -1)
-
-	return X_new
+    return X_new
 
 @app.route('/')
 @app.route('/index')
