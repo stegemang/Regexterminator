@@ -2,14 +2,18 @@
 {% block content %}
     <div class="container">
       <div class="starter-template">
-      <h4>Top regex matches from:</h4>
+      <h4>Regexterminator recommends:</h4>
+      <h1>{% print(y_class) %}</h1>
+<br>
+      <h4>From:</h4>
       <p>{% print('"' + uncleaned_sentence + '"') %}</p>
+    </div>
+      <div class="starter-template">
       <h4>To:</h4>
       <p>{% print('"' + cleaned_sentence + '"') %}</p>
       <!--<p class="lead">Below is the result of your query.<br> You just took user input and looked up the information.  Now we need to expand the functionality!</p> -->
       </div>
       
-      {% print(y_class) %}
 
 
       </div><!--/.container-->
