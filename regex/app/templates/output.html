@@ -3,7 +3,7 @@
     <div class="container">
       <div class="starter-template">
       <h4>Regexterminator recommends:</h4>
-      <h1>{% print(y_class) %}</h1>
+      <code><font size="+2">{% print(y_class) %}</font></code>
 <br>
       <h4>From:</h4>
       <p>{% print('"' + uncleaned_sentence + '"') %}</p>
@@ -12,6 +12,10 @@
       <h4>To:</h4>
       <p>{% print('"' + cleaned_sentence + '"') %}</p>
       <!--<p class="lead">Below is the result of your query.<br> You just took user input and looked up the information.  Now we need to expand the functionality!</p> -->
+      <h4>Test it out in python:</h4>
+      <code>import re</br>
+      re.sub(r'{% print(y_class) %}','',{% print('"' + uncleaned_sentence + '"') %})</code>
+
       </div>
       
 
