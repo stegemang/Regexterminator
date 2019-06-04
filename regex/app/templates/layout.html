@@ -109,7 +109,7 @@
           <label for="uncleaned_sentence">Sentence to Clean:</label>
           <!--<input type="text" id="ID" name='ID' placeholder="Type here a sentences or two!"> -->
           <!--<input class="form-control" rows="3" id="ID" name='ID'>-->
-          <textarea class="form-control" rows="1" id="uncleaned_sentence" name='uncleaned_sentence' placeholder="Type here a sentences or two!"></textarea>
+          <textarea class="form-control" rows="1" id="uncleaned_sentence" name='uncleaned_sentence' placeholder="Type here a sentence or two!"></textarea>
         </div>
       
       <div>
@@ -119,8 +119,28 @@
       </div>
       <button type="submit" class="btn btn-primary">Find Regex!</button>
       </div>
+       <script> function inputExample(input_str, output_str) {  
+        document.getElementById("uncleaned_sentence").value=input_str;
+        document.getElementById("cleaned_sentence").value=output_str;
+        } 
+       </script>
+
+       <!--<script> function inputExample() {  
+        document.getElementById("uncleaned_sentence").value="Sarah Connor birthdate:1980-06-13";
+        document.getElementById("cleaned_sentence").value="Sarah Connor";
+        } 
+       </script>-->
       
       </form>
+      </div><h4> Input an Example: </h4>
+      <div>
+      <button type="example" class="btn" onclick="inputExample('Regexterminator is awesome!!','Regexterminator is awesome')">Remove Punctuations</button>
+      <button type="example" class="btn" onclick="inputExample('Sarah Connor was born in 1980','Sarah Connor was born in ')">Remove Numbers</button>
+      <button type="example" class="btn" onclick="inputExample('Pearl Harbor was attacked on December 7, 1941','PearlHarborwasattackedonDecember7,1941')">Remove Whitespace</button>
+      <!--<button type="example" class="btn col-lg-3 col-md-4 col-sm-6" onclick="inputExample()">Remove numbers</button>-->
+      </div>
+
+      </div>
       </div>
       
       <script scr="https://code.jquery.com/jquery-1.10.2.min.js"></script>
